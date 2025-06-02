@@ -1,0 +1,17 @@
+# Production requirements
+-r base.txt
+
+# Production server
+gunicorn>=21.2.0
+
+# Monitoring
+sentry-sdk[fastapi]>=1.32.0
+
+# Database
+psycopg2-binary>=2.9.0  # PostgreSQL
+
+# Cache
+redis>=5.0.0
+
+# File storage (optional)
+boto3>=1.29.0  # AWS S3
