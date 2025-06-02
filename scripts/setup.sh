@@ -36,7 +36,7 @@ pip install --upgrade pip
 # Install dependencies
 echo -e "${BLUE}📦 Installing dependencies...${NC}"
 if [ "$1" = "dev" ]; then
-    pip install -r requirements/development.txt
+    pip install -r ./requirements/development.txt
     echo -e "${GREEN}✅ Development dependencies installed${NC}"
 else
     pip install -r requirements/production.txt

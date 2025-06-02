@@ -10,7 +10,7 @@ gunicorn==21.2.0
 sqlalchemy==2.0.23
 alembic==1.12.1
 psycopg2-binary==2.9.9  # PostgreSQL
-sqlite3  # Built-in Python
+
 
 # Authentication & Security
 python-jose[cryptography]==3.3.0
@@ -53,52 +53,3 @@ structlog==23.2.0
 
 # Development
 python-json-logger==2.0.7
-
----
-
-# requirements/development.txt
-# Development requirements
-
--r base.txt
-
-# Testing
-pytest==7.4.3
-pytest-asyncio==0.21.1
-pytest-cov==4.1.0
-pytest-mock==3.12.0
-httpx==0.25.2  # For testing
-
-# Code Quality
-black==23.11.0
-isort==5.12.0
-flake8==6.1.0
-mypy==1.7.1
-
-# Documentation
-mkdocs==1.5.3
-mkdocs-material==9.4.8
-
-# Debugging
-pytest-xdist==3.5.0
-pytest-sugar==0.9.7
-
----
-
-# requirements/production.txt
-# Production requirements
-
--r base.txt
-
-# Production WSGI Server
-gunicorn==21.2.0
-
-# Production Database
-psycopg2-binary==2.9.9
-
-# Monitoring
-sentry-sdk[fastapi]==1.38.0
-
-# Performance
-orjson==3.9.10  # Faster JSON
-
----
