@@ -3,7 +3,7 @@ EmberFrame V2 - Enhanced Main Application Entry Point
 """
 
 import uvicorn
-from fastapi import FastAPI, Request, Depends
+from fastapi import Depends
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -12,9 +12,7 @@ from sqlalchemy.orm import Session
 from app import create_app
 from app.core.config import get_settings
 from app.core.database import create_tables, get_db
-from app.core.dependencies import get_current_user
-from app.models.user import User
-from app.utils.logging import setup_logging
+from app.utils import setup_logging
 
 # Setup logging
 setup_logging()

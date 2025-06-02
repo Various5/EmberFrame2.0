@@ -7,7 +7,7 @@ services:
   # Main application
   app:
     build:
-      context: .
+      context: emberframe-v2
       dockerfile: Dockerfile.prod
       args:
         - BUILD_ENV=production
@@ -104,7 +104,7 @@ services:
   # Celery Worker
   celery:
     build:
-      context: .
+      context: emberframe-v2
       dockerfile: Dockerfile.prod
     container_name: emberframe_celery
     restart: unless-stopped
@@ -133,7 +133,7 @@ services:
   # Celery Beat (Scheduler)
   celery-beat:
     build:
-      context: .
+      context: emberframe-v2
       dockerfile: Dockerfile.prod
     container_name: emberframe_celery_beat
     restart: unless-stopped
