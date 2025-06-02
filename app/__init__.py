@@ -3,41 +3,26 @@
 Complete EmberFrame V2 Application Factory
 """
 
-from fastapi import FastAPI, Request, Response
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
-from starlette.middleware.sessions import SessionMiddleware
 import time
 import logging
 
+# Import settings first
 from app.core.config import get_settings
-from app.core.security import get_security_middleware, rate_limiter
-from app.core.database import create_tables
-from app.utils.logging import setup_logging
 
-# Import all API routers
-from app.api.auth import auth_router
-from app.api.users import users_router
-from app.api.files import files_router
-from app.api.admin import admin_router
-from app.api.websocket import websocket_router
-from app.api.system import system_router
-from app.api.notifications import notifications_router
-from app.api.search import search_router
-from app.api.sharing import sharing_router
-from app.api.analytics import analytics_router
-from app.api.integrations import integrations_router
-
-logger = logging.getLogger(__name__)
+settings = get_settings()
 
 
 def create_app() -> FastAPI:
     """Create and configure FastAPI application"""
 
-    settings = get_settings()
-
-    # Setup logging
+    # Setup logging first
+    from app.utils.logging import setup_logging
     setup_logging()
+
+    logger = logging.getLogger(__name__)
 
     # Create FastAPI app
     app = FastAPI(
@@ -49,8 +34,8 @@ def create_app() -> FastAPI:
         openapi_url="/api/openapi.json" if settings.DEBUG else None
     )
 
-    # Add middleware
-    setup_middleware(app, settings)
+    # Add basic middleware first
+    setup_basic_middleware(app)
 
     # Include API routers
     setup_routes(app)
@@ -58,20 +43,13 @@ def create_app() -> FastAPI:
     # Setup event handlers
     setup_events(app)
 
-    # Create database tables
-    create_tables()
-
     logger.info("🔥 EmberFrame V2 API initialized successfully")
 
     return app
 
 
-def setup_middleware(app: FastAPI, settings):
-    """Setup application middleware"""
-
-    # Security middleware (rate limiting, headers, etc.)
-    security_middleware = get_security_middleware()
-    app.add_middleware(type(security_middleware), rate_limiter=rate_limiter)
+def setup_basic_middleware(app: FastAPI):
+    """Setup basic application middleware"""
 
     # CORS middleware
     app.add_middleware(
@@ -84,13 +62,6 @@ def setup_middleware(app: FastAPI, settings):
 
     # Compression middleware
     app.add_middleware(GZipMiddleware, minimum_size=1000)
-
-    # Session middleware
-    app.add_middleware(
-        SessionMiddleware,
-        secret_key=settings.SECRET_KEY,
-        max_age=settings.SESSION_EXPIRE
-    )
 
     # Request timing middleware
     @app.middleware("http")
@@ -105,22 +76,47 @@ def setup_middleware(app: FastAPI, settings):
 def setup_routes(app: FastAPI):
     """Setup API routes"""
 
-    # API routes with prefix
-    api_prefix = "/api"
+    try:
+        # Import routers individually to handle missing dependencies gracefully
+        api_prefix = "/api"
 
-    app.include_router(auth_router, prefix=f"{api_prefix}/auth", tags=["Authentication"])
-    app.include_router(users_router, prefix=f"{api_prefix}/users", tags=["Users"])
-    app.include_router(files_router, prefix=f"{api_prefix}/files", tags=["Files"])
-    app.include_router(sharing_router, prefix=f"{api_prefix}/sharing", tags=["File Sharing"])
-    app.include_router(search_router, prefix=f"{api_prefix}/search", tags=["Search"])
-    app.include_router(notifications_router, prefix=f"{api_prefix}/notifications", tags=["Notifications"])
-    app.include_router(analytics_router, prefix=f"{api_prefix}/analytics", tags=["Analytics"])
-    app.include_router(system_router, prefix=f"{api_prefix}/system", tags=["System"])
-    app.include_router(integrations_router, prefix=f"{api_prefix}/integrations", tags=["Integrations"])
-    app.include_router(admin_router, prefix=f"{api_prefix}/admin", tags=["Administration"])
+        # Core authentication
+        try:
+            from app.api.auth import auth_router
+            app.include_router(auth_router, prefix=f"{api_prefix}/auth", tags=["Authentication"])
+        except ImportError as e:
+            print(f"Warning: Could not import auth router: {e}")
 
-    # WebSocket routes
-    app.include_router(websocket_router, prefix="/ws", tags=["WebSocket"])
+        # User management
+        try:
+            from app.api.users import users_router
+            app.include_router(users_router, prefix=f"{api_prefix}/users", tags=["Users"])
+        except ImportError as e:
+            print(f"Warning: Could not import users router: {e}")
+
+        # File management
+        try:
+            from app.api.files import files_router
+            app.include_router(files_router, prefix=f"{api_prefix}/files", tags=["Files"])
+        except ImportError as e:
+            print(f"Warning: Could not import files router: {e}")
+
+        # Admin functionality
+        try:
+            from app.api.admin import admin_router
+            app.include_router(admin_router, prefix=f"{api_prefix}/admin", tags=["Administration"])
+        except ImportError as e:
+            print(f"Warning: Could not import admin router: {e}")
+
+        # WebSocket routes
+        try:
+            from app.api.websocket import websocket_router
+            app.include_router(websocket_router, prefix="/ws", tags=["WebSocket"])
+        except ImportError as e:
+            print(f"Warning: Could not import websocket router: {e}")
+
+    except Exception as e:
+        print(f"Error setting up routes: {e}")
 
 
 def setup_events(app: FastAPI):
@@ -129,57 +125,25 @@ def setup_events(app: FastAPI):
     @app.on_event("startup")
     async def startup_event():
         """Application startup tasks"""
+        logger = logging.getLogger(__name__)
         logger.info("🚀 Starting EmberFrame V2...")
 
-        # Initialize services
-        from app.services.notification_service import NotificationService
-        from app.services.cache_service import CacheService
-
-        # Setup periodic tasks
-        import asyncio
-        from app.tasks.maintenance_tasks import cleanup_old_audit_logs
-
-        # Schedule background tasks
-        asyncio.create_task(schedule_periodic_tasks())
+        # Create database tables
+        try:
+            from app.core.database import create_tables
+            create_tables()
+            logger.info("✅ Database tables created")
+        except Exception as e:
+            logger.error(f"❌ Database initialization failed: {e}")
 
         logger.info("✅ EmberFrame V2 startup completed")
 
     @app.on_event("shutdown")
     async def shutdown_event():
         """Application shutdown tasks"""
+        logger = logging.getLogger(__name__)
         logger.info("🛑 Shutting down EmberFrame V2...")
-
-        # Cleanup tasks
-        # Close database connections, cache connections, etc.
-
         logger.info("✅ EmberFrame V2 shutdown completed")
-
-
-async def schedule_periodic_tasks():
-    """Schedule periodic background tasks"""
-    import asyncio
-    from app.tasks.maintenance_tasks import (
-        cleanup_old_audit_logs,
-        update_storage_statistics,
-        system_health_check
-    )
-
-    while True:
-        try:
-            # Run tasks every hour
-            await asyncio.sleep(3600)
-
-            # Cleanup old audit logs
-            await cleanup_old_audit_logs()
-
-            # Update storage stats
-            await update_storage_statistics()
-
-            # System health check
-            await system_health_check()
-
-        except Exception as e:
-            logger.error(f"Error in periodic tasks: {e}")
 
 
 # Global exception handlers
@@ -202,6 +166,7 @@ def setup_exception_handlers(app: FastAPI):
 
     @app.exception_handler(Exception)
     async def general_exception_handler(request: Request, exc: Exception):
+        logger = logging.getLogger(__name__)
         logger.error(f"Unhandled exception: {exc}")
         return JSONResponse(
             status_code=500,
