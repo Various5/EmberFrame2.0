@@ -1,18 +1,20 @@
 """
-Security middleware and rate limiting for EmberFrame V2
+Complete security utilities and authentication for EmberFrame V2
 """
 
 import time
 import hashlib
 import ipaddress
 from datetime import datetime, timedelta
-from typing import Dict, Set, Optional, List
+from typing import Dict, Set, Optional, List, Union, Any
 from fastapi import Request, Response, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse
 import redis
 import logging
+from jose import JWTError, jwt
+from passlib.context import CryptContext
 
 from app.core.config import get_settings
 from app.utils.helpers import get_client_ip
@@ -20,6 +22,78 @@ from app.utils.helpers import get_client_ip
 logger = logging.getLogger(__name__)
 settings = get_settings()
 
+# Password hashing context
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+# JWT configuration
+ALGORITHM = "HS256"
+
+
+# ===== CORE AUTHENTICATION FUNCTIONS =====
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    """Verify password against hash"""
+    return pwd_context.verify(plain_password, hashed_password)
+
+
+def get_password_hash(password: str) -> str:
+    """Hash password"""
+    return pwd_context.hash(password)
+
+
+def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
+    """Create JWT access token"""
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(hours=settings.TOKEN_EXPIRE_HOURS)
+
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+
+def verify_token(token: str) -> dict:
+    """Verify JWT token and return payload"""
+    try:
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[ALGORITHM])
+        return payload
+    except JWTError as e:
+        logger.warning(f"Token verification failed: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+
+def create_refresh_token(data: dict) -> str:
+    """Create JWT refresh token with longer expiration"""
+    to_encode = data.copy()
+    expire = datetime.utcnow() + timedelta(days=30)  # Refresh tokens last 30 days
+    to_encode.update({"exp": expire, "type": "refresh"})
+    return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=ALGORITHM)
+
+
+def verify_refresh_token(token: str) -> dict:
+    """Verify refresh token"""
+    try:
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[ALGORITHM])
+        if payload.get("type") != "refresh":
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid token type"
+            )
+        return payload
+    except JWTError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid refresh token"
+        )
+
+
+# ===== SECURITY HEADERS =====
 
 class SecurityHeaders:
     """Security headers configuration"""
@@ -45,7 +119,7 @@ class SecurityHeaders:
                 "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com; "
                 "style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; "
                 "img-src 'self' data: blob: https:; "
-                "font-src 'self' https://cdnjs.cloudflare.com; "
+                "font-src 'self' https://cdnjs.cloudflare.com https://fonts.googleapis.com https://fonts.gstatic.com; "
                 "connect-src 'self' ws: wss:; "
                 "media-src 'self' blob:; "
                 "object-src 'none'; "
@@ -66,12 +140,16 @@ class SecurityHeaders:
         }
 
 
+# ===== RATE LIMITING =====
+
 class RateLimiter:
     """Redis-based rate limiter"""
 
     def __init__(self):
         try:
             self.redis_client = redis.from_url(settings.REDIS_URL, decode_responses=True)
+            # Test connection
+            self.redis_client.ping()
         except Exception as e:
             logger.warning(f"Redis connection failed, using in-memory rate limiting: {e}")
             self.redis_client = None
@@ -158,6 +236,8 @@ class RateLimiter:
         }
 
 
+# ===== SECURITY MIDDLEWARE =====
+
 class SecurityMiddleware(BaseHTTPMiddleware):
     """Main security middleware"""
 
@@ -213,22 +293,30 @@ class SecurityMiddleware(BaseHTTPMiddleware):
                     content={"detail": "Invalid request"}
                 )
 
-            # 3. Apply rate limiting
-            rate_limit_result = await self._apply_rate_limiting(request, client_ip)
-            if not rate_limit_result['allowed']:
-                return JSONResponse(
-                    status_code=429,
-                    content={
-                        "detail": "Rate limit exceeded",
-                        "retry_after": rate_limit_result['retry_after']
-                    },
-                    headers={
-                        "Retry-After": str(rate_limit_result['retry_after']),
-                        "X-RateLimit-Limit": str(rate_limit_result['limit']),
-                        "X-RateLimit-Remaining": str(rate_limit_result['remaining']),
-                        "X-RateLimit-Reset": str(int(rate_limit_result['reset_time']))
-                    }
-                )
+            # 3. Apply rate limiting (only if enabled)
+            if getattr(settings, 'RATE_LIMIT_ENABLED', True):
+                rate_limit_result = await self._apply_rate_limiting(request, client_ip)
+                if not rate_limit_result['allowed']:
+                    return JSONResponse(
+                        status_code=429,
+                        content={
+                            "detail": "Rate limit exceeded",
+                            "retry_after": rate_limit_result['retry_after']
+                        },
+                        headers={
+                            "Retry-After": str(rate_limit_result['retry_after']),
+                            "X-RateLimit-Limit": str(rate_limit_result['limit']),
+                            "X-RateLimit-Remaining": str(rate_limit_result['remaining']),
+                            "X-RateLimit-Reset": str(int(rate_limit_result['reset_time']))
+                        }
+                    )
+            else:
+                # If rate limiting is disabled, create a dummy result
+                rate_limit_result = {
+                    'limit': 1000,
+                    'remaining': 999,
+                    'reset_time': time.time() + 3600
+                }
 
             # Process request
             response = await call_next(request)
@@ -239,9 +327,10 @@ class SecurityMiddleware(BaseHTTPMiddleware):
                     response.headers[header_name] = header_value
 
             # Add rate limit headers
-            response.headers["X-RateLimit-Limit"] = str(rate_limit_result['limit'])
-            response.headers["X-RateLimit-Remaining"] = str(rate_limit_result['remaining'])
-            response.headers["X-RateLimit-Reset"] = str(int(rate_limit_result['reset_time']))
+            if getattr(settings, 'RATE_LIMIT_ENABLED', True):
+                response.headers["X-RateLimit-Limit"] = str(rate_limit_result['limit'])
+                response.headers["X-RateLimit-Remaining"] = str(rate_limit_result['remaining'])
+                response.headers["X-RateLimit-Reset"] = str(int(rate_limit_result['reset_time']))
 
             # Add processing time header
             process_time = time.time() - start_time
@@ -360,14 +449,16 @@ class SecurityMiddleware(BaseHTTPMiddleware):
         logger.info(f"Unblocked IP address: {ip_address}")
 
 
+# ===== AUTHENTICATION SECURITY =====
+
 class AuthenticationSecurity:
     """Enhanced authentication security features"""
 
     def __init__(self):
         self.failed_attempts: Dict[str, List[datetime]] = {}
         self.locked_accounts: Dict[str, datetime] = {}
-        self.max_attempts = 5
-        self.lockout_duration = timedelta(minutes=15)
+        self.max_attempts = getattr(settings, 'MAX_LOGIN_ATTEMPTS', 5)
+        self.lockout_duration = timedelta(seconds=getattr(settings, 'LOCKOUT_DURATION', 900))  # 15 minutes
         self.attempt_window = timedelta(minutes=5)
 
     def record_failed_attempt(self, identifier: str) -> bool:
@@ -422,6 +513,8 @@ class AuthenticationSecurity:
         self.locked_accounts.pop(identifier, None)
 
 
+# ===== CSRF PROTECTION =====
+
 class CSRFProtection:
     """CSRF protection for state-changing operations"""
 
@@ -463,7 +556,8 @@ class CSRFProtection:
             del self.token_store[key]
 
 
-# Global instances
+# ===== GLOBAL INSTANCES =====
+
 rate_limiter = RateLimiter()
 auth_security = AuthenticationSecurity()
 csrf_protection = CSRFProtection()
@@ -474,7 +568,8 @@ def get_security_middleware():
     return SecurityMiddleware(app=None, rate_limiter=rate_limiter)
 
 
-# Security utility functions
+# ===== UTILITY FUNCTIONS =====
+
 def validate_password_strength(password: str) -> Dict[str, any]:
     """Validate password strength"""
     issues = []
