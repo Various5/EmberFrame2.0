@@ -1,0 +1,1213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EmberFrame V2 - Desktop</title>
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --background-color: #0a0a0f;
+            --text-color: #ffffff;
+            --border-color: #333;
+            --window-bg: #1a1a2e;
+            --taskbar-bg: rgba(0, 0, 0, 0.8);
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --error-color: #e74c3c;
+            --accent-color: #9b59b6;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: var(--text-color);
+            height: 100vh;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        /* Desktop Environment */
+        .desktop {
+            height: 100vh;
+            position: relative;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            display: flex;
+            flex-direction: column;
+        }
+
+        .desktop::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><circle cx="200" cy="300" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="800" cy="200" r="1.5" fill="rgba(255,255,255,0.1)"/><circle cx="300" cy="700" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="700" cy="600" r="2.5" fill="rgba(255,255,255,0.1)"/><circle cx="900" cy="800" r="1" fill="rgba(255,255,255,0.1)"/></svg>');
+            pointer-events: none;
+            animation: float 20s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .desktop-content {
+            flex: 1;
+            position: relative;
+            padding: 20px;
+            padding-bottom: 80px;
+        }
+
+        /* Desktop Icons */
+        .desktop-icons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, 80px);
+            gap: 20px;
+            justify-content: start;
+            align-content: start;
+        }
+
+        .desktop-icon {
+            width: 80px;
+            height: 80px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .desktop-icon:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .desktop-icon i {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .desktop-icon span {
+            font-size: 10px;
+            text-align: center;
+            color: var(--text-color);
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Taskbar */
+        .taskbar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: var(--taskbar-bg);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            z-index: 1000;
+        }
+
+        .start-button {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-right: 20px;
+        }
+
+        .start-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .taskbar-items {
+            display: flex;
+            gap: 10px;
+            flex: 1;
+        }
+
+        .taskbar-item {
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            max-width: 200px;
+        }
+
+        .taskbar-item:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .taskbar-item.active {
+            background: var(--primary-color);
+        }
+
+        .system-tray {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .system-icon {
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .system-icon:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .time-display {
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        /* Windows */
+        .window {
+            position: absolute;
+            background: var(--window-bg);
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            min-width: 400px;
+            min-height: 300px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(20px);
+            z-index: 100;
+        }
+
+        .window.maximized {
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: calc(100vh - 60px) !important;
+            border-radius: 0;
+        }
+
+        .window-header {
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 12px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: move;
+            user-select: none;
+        }
+
+        .window-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 500;
+        }
+
+        .window-controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        .window-control {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .window-control.close {
+            background: #ff5f57;
+        }
+
+        .window-control.minimize {
+            background: #ffbd2e;
+        }
+
+        .window-control.maximize {
+            background: #28ca42;
+        }
+
+        .window-control:hover {
+            opacity: 0.8;
+            transform: scale(1.1);
+        }
+
+        .window-content {
+            padding: 20px;
+            height: calc(100% - 48px);
+            overflow: auto;
+            background: var(--window-bg);
+            color: var(--text-color);
+        }
+
+        /* File Manager */
+        .file-manager {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .file-toolbar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .toolbar-btn {
+            padding: 8px 12px;
+            background: var(--primary-color);
+            border: none;
+            border-radius: 6px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .toolbar-btn:hover {
+            background: var(--secondary-color);
+            transform: translateY(-1px);
+        }
+
+        .file-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 15px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .file-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .file-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .file-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+            color: var(--primary-color);
+        }
+
+        .file-name {
+            font-size: 0.8rem;
+            text-align: center;
+            color: var(--text-color);
+        }
+
+        /* Notifications */
+        .notification-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .notification {
+            background: var(--window-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            min-width: 300px;
+            backdrop-filter: blur(20px);
+            animation: slideInRight 0.3s ease-out;
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .notification.success {
+            border-left: 4px solid var(--success-color);
+        }
+
+        .notification.warning {
+            border-left: 4px solid var(--warning-color);
+        }
+
+        .notification.error {
+            border-left: 4px solid var(--error-color);
+        }
+
+        /* Context Menu */
+        .context-menu {
+            position: fixed;
+            background: var(--window-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 5px 0;
+            min-width: 150px;
+            backdrop-filter: blur(20px);
+            z-index: 3000;
+            display: none;
+        }
+
+        .context-menu-item {
+            padding: 10px 15px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .context-menu-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .desktop-content {
+                padding: 10px;
+                padding-bottom: 70px;
+            }
+
+            .window {
+                min-width: 300px;
+                width: 90vw !important;
+                height: 80vh !important;
+            }
+
+            .taskbar {
+                height: 50px;
+                padding: 0 10px;
+            }
+
+            .desktop-icons {
+                grid-template-columns: repeat(auto-fit, 60px);
+                gap: 15px;
+            }
+
+            .desktop-icon {
+                width: 60px;
+                height: 60px;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="desktop" id="desktop">
+        <div class="desktop-content">
+            <div class="desktop-icons" id="desktopIcons">
+                <div class="desktop-icon" data-app="filemanager">
+                    <i class="fas fa-folder"></i>
+                    <span>Files</span>
+                </div>
+                <div class="desktop-icon" data-app="settings">
+                    <i class="fas fa-cog"></i>
+                    <span>Settings</span>
+                </div>
+                <div class="desktop-icon" data-app="texteditor">
+                    <i class="fas fa-edit"></i>
+                    <span>Text Editor</span>
+                </div>
+                <div class="desktop-icon" data-app="calculator">
+                    <i class="fas fa-calculator"></i>
+                    <span>Calculator</span>
+                </div>
+                <div class="desktop-icon" data-app="terminal">
+                    <i class="fas fa-terminal"></i>
+                    <span>Terminal</span>
+                </div>
+                <div class="desktop-icon" data-app="imageviewer">
+                    <i class="fas fa-image"></i>
+                    <span>Images</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="taskbar">
+            <div class="start-button" id="startButton">
+                <span>🔥 Start</span>
+            </div>
+
+            <div class="taskbar-items" id="taskbarItems">
+                <!-- Running applications will appear here -->
+            </div>
+
+            <div class="system-tray">
+                <div class="system-icon" id="notificationIcon">
+                    <i class="fas fa-bell"></i>
+                </div>
+                <div class="system-icon" id="networkIcon">
+                    <i class="fas fa-wifi"></i>
+                </div>
+                <div class="system-icon" id="userIcon">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="time-display" id="timeDisplay">
+                    <div class="time">12:00</div>
+                    <div class="date" style="font-size: 0.7rem; opacity: 0.8;">Mon, Jan 1</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Container -->
+    <div class="notification-container" id="notificationContainer"></div>
+
+    <!-- Context Menu -->
+    <div class="context-menu" id="contextMenu">
+        <div class="context-menu-item" data-action="refresh">
+            <i class="fas fa-sync"></i> Refresh
+        </div>
+        <div class="context-menu-item" data-action="paste">
+            <i class="fas fa-paste"></i> Paste
+        </div>
+        <div class="context-menu-item" data-action="properties">
+            <i class="fas fa-info-circle"></i> Properties
+        </div>
+    </div>
+
+    <script>
+        class EmberFrameDesktop {
+            constructor() {
+                this.windows = new Map();
+                this.apps = new Map();
+                this.windowZIndex = 100;
+                this.activeWindow = null;
+                this.user = null;
+                this.apiBase = '/api';
+
+                this.init();
+            }
+
+            async init() {
+                console.log('🔥 Initializing EmberFrame Desktop...');
+
+                await this.checkAuthentication();
+                this.setupEventListeners();
+                this.initializeApps();
+                this.updateTime();
+                this.setupWebSocket();
+
+                this.showNotification('Welcome to EmberFrame V2!', 'success');
+                console.log('✅ Desktop initialized successfully');
+            }
+
+            async checkAuthentication() {
+                const token = localStorage.getItem('accessToken');
+                if (!token) {
+                    window.location.href = '/login';
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`${this.apiBase}/auth/me`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+
+                    if (response.ok) {
+                        this.user = await response.json();
+                        console.log('User authenticated:', this.user);
+                    } else {
+                        localStorage.clear();
+                        window.location.href = '/login';
+                    }
+                } catch (error) {
+                    console.error('Authentication error:', error);
+                    localStorage.clear();
+                    window.location.href = '/login';
+                }
+            }
+
+            setupEventListeners() {
+                // Desktop icons
+                document.getElementById('desktopIcons').addEventListener('click', (e) => {
+                    const icon = e.target.closest('.desktop-icon');
+                    if (icon) {
+                        const appName = icon.dataset.app;
+                        this.openApp(appName);
+                    }
+                });
+
+                // Context menu
+                document.addEventListener('contextmenu', (e) => {
+                    e.preventDefault();
+                    this.showContextMenu(e.clientX, e.clientY);
+                });
+
+                document.addEventListener('click', () => {
+                    this.hideContextMenu();
+                });
+
+                // User icon
+                document.getElementById('userIcon').addEventListener('click', () => {
+                    this.showUserMenu();
+                });
+
+                // Keyboard shortcuts
+                document.addEventListener('keydown', (e) => {
+                    this.handleKeyboardShortcuts(e);
+                });
+            }
+
+            initializeApps() {
+                // Register applications
+                this.apps.set('filemanager', {
+                    name: 'File Manager',
+                    icon: 'fas fa-folder',
+                    component: 'FileManagerApp'
+                });
+
+                this.apps.set('settings', {
+                    name: 'Settings',
+                    icon: 'fas fa-cog',
+                    component: 'SettingsApp'
+                });
+
+                this.apps.set('texteditor', {
+                    name: 'Text Editor',
+                    icon: 'fas fa-edit',
+                    component: 'TextEditorApp'
+                });
+
+                this.apps.set('calculator', {
+                    name: 'Calculator',
+                    icon: 'fas fa-calculator',
+                    component: 'CalculatorApp'
+                });
+
+                this.apps.set('terminal', {
+                    name: 'Terminal',
+                    icon: 'fas fa-terminal',
+                    component: 'TerminalApp'
+                });
+
+                this.apps.set('imageviewer', {
+                    name: 'Image Viewer',
+                    icon: 'fas fa-image',
+                    component: 'ImageViewerApp'
+                });
+            }
+
+            openApp(appName) {
+                const app = this.apps.get(appName);
+                if (!app) {
+                    this.showNotification(`App "${appName}" not found`, 'error');
+                    return;
+                }
+
+                // Check if app is already open
+                if (this.windows.has(appName)) {
+                    this.focusWindow(appName);
+                    return;
+                }
+
+                this.createWindow(appName, app);
+            }
+
+            createWindow(appId, app) {
+                const window = document.createElement('div');
+                window.className = 'window';
+                window.id = `window-${appId}`;
+                window.style.zIndex = ++this.windowZIndex;
+
+                // Random position
+                const x = Math.random() * (window.innerWidth - 600) + 50;
+                const y = Math.random() * (window.innerHeight - 500) + 50;
+
+                window.style.left = x + 'px';
+                window.style.top = y + 'px';
+                window.style.width = '600px';
+                window.style.height = '400px';
+
+                window.innerHTML = `
+                    <div class="window-header">
+                        <div class="window-title">
+                            <i class="${app.icon}"></i>
+                            <span>${app.name}</span>
+                        </div>
+                        <div class="window-controls">
+                            <div class="window-control minimize" onclick="desktop.minimizeWindow('${appId}')"></div>
+                            <div class="window-control maximize" onclick="desktop.toggleMaximize('${appId}')"></div>
+                            <div class="window-control close" onclick="desktop.closeWindow('${appId}')"></div>
+                        </div>
+                    </div>
+                    <div class="window-content" id="content-${appId}">
+                        Loading ${app.name}...
+                    </div>
+                `;
+
+                document.getElementById('desktop').appendChild(window);
+                this.windows.set(appId, window);
+
+                // Make window draggable
+                this.makeDraggable(window);
+
+                // Make window resizable
+                this.makeResizable(window);
+
+                // Load app content
+                this.loadAppContent(appId, app);
+
+                // Add to taskbar
+                this.addToTaskbar(appId, app);
+
+                // Focus window
+                this.focusWindow(appId);
+            }
+
+            async loadAppContent(appId, app) {
+                const content = document.getElementById(`content-${appId}`);
+
+                switch (appId) {
+                    case 'filemanager':
+                        content.innerHTML = this.getFileManagerHTML();
+                        await this.initFileManager(appId);
+                        break;
+                    case 'settings':
+                        content.innerHTML = this.getSettingsHTML();
+                        this.initSettings(appId);
+                        break;
+                    case 'texteditor':
+                        content.innerHTML = this.getTextEditorHTML();
+                        this.initTextEditor(appId);
+                        break;
+                    case 'calculator':
+                        content.innerHTML = this.getCalculatorHTML();
+                        this.initCalculator(appId);
+                        break;
+                    default:
+                        content.innerHTML = `<h2>${app.name}</h2><p>This application is under development.</p>`;
+                }
+            }
+
+            getFileManagerHTML() {
+                return `
+                    <div class="file-manager">
+                        <div class="file-toolbar">
+                            <button class="toolbar-btn" onclick="desktop.fileManagerRefresh()">
+                                <i class="fas fa-sync"></i> Refresh
+                            </button>
+                            <button class="toolbar-btn" onclick="desktop.fileManagerUpload()">
+                                <i class="fas fa-upload"></i> Upload
+                            </button>
+                            <button class="toolbar-btn" onclick="desktop.fileManagerNewFolder()">
+                                <i class="fas fa-folder-plus"></i> New Folder
+                            </button>
+                            <input type="file" id="fileInput" multiple style="display: none;">
+                        </div>
+                        <div class="file-grid" id="fileGrid">
+                            <div style="text-align: center; color: #888; grid-column: 1/-1;">
+                                Loading files...
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            getSettingsHTML() {
+                return `
+                    <div style="padding: 20px;">
+                        <h2>Settings</h2>
+                        <div style="margin-top: 20px;">
+                            <h3>Theme</h3>
+                            <select id="themeSelect" style="margin: 10px 0; padding: 8px; width: 200px; background: var(--window-bg); color: var(--text-color); border: 1px solid var(--border-color); border-radius: 4px;">
+                                <option value="ember-blue">Ember Blue</option>
+                                <option value="ember-purple">Ember Purple</option>
+                                <option value="ember-green">Ember Green</option>
+                                <option value="ember-dark">Ember Dark</option>
+                            </select>
+                        </div>
+                        <div style="margin-top: 20px;">
+                            <h3>User Information</h3>
+                            <div style="margin: 10px 0;">
+                                <strong>Username:</strong> <span id="userUsername">${this.user?.username || 'N/A'}</span>
+                            </div>
+                            <div style="margin: 10px 0;">
+                                <strong>Email:</strong> <span id="userEmail">${this.user?.email || 'N/A'}</span>
+                            </div>
+                        </div>
+                        <div style="margin-top: 30px;">
+                            <button class="toolbar-btn" onclick="desktop.logout()" style="background: var(--error-color);">
+                                <i class="fas fa-sign-out-alt"></i> Logout
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            getTextEditorHTML() {
+                return `
+                    <div style="height: 100%; display: flex; flex-direction: column;">
+                        <div style="padding: 10px; border-bottom: 1px solid var(--border-color);">
+                            <button class="toolbar-btn" onclick="desktop.textEditorNew()">
+                                <i class="fas fa-file"></i> New
+                            </button>
+                            <button class="toolbar-btn" onclick="desktop.textEditorSave()">
+                                <i class="fas fa-save"></i> Save
+                            </button>
+                        </div>
+                        <textarea id="textEditor" style="flex: 1; background: var(--window-bg); color: var(--text-color); border: none; padding: 15px; font-family: 'Courier New', monospace; font-size: 14px; resize: none; outline: none;" placeholder="Start typing..."></textarea>
+                    </div>
+                `;
+            }
+
+            getCalculatorHTML() {
+                return `
+                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 20px; max-width: 300px;">
+                        <div id="calcDisplay" style="grid-column: 1/-1; background: var(--window-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 15px; text-align: right; font-size: 24px; margin-bottom: 10px;">0</div>
+
+                        <button class="calc-btn" onclick="desktop.calcClear()" style="background: var(--error-color);">C</button>
+                        <button class="calc-btn" onclick="desktop.calcInput('/')" style="background: var(--secondary-color);">÷</button>
+                        <button class="calc-btn" onclick="desktop.calcInput('*')" style="background: var(--secondary-color);">×</button>
+                        <button class="calc-btn" onclick="desktop.calcBackspace()" style="background: var(--warning-color);">⌫</button>
+
+                        <button class="calc-btn" onclick="desktop.calcInput('7')">7</button>
+                        <button class="calc-btn" onclick="desktop.calcInput('8')">8</button>
+                        <button class="calc-btn" onclick="desktop.calcInput('9')">9</button>
+                        <button class="calc-btn" onclick="desktop.calcInput('-')" style="background: var(--secondary-color);">-</button>
+
+                        <button class="calc-btn" onclick="desktop.calcInput('4')">4</button>
+                        <button class="calc-btn" onclick="desktop.calcInput('5')">5</button>
+                        <button class="calc-btn" onclick="desktop.calcInput('6')">6</button>
+                        <button class="calc-btn" onclick="desktop.calcInput('+')" style="background: var(--secondary-color);">+</button>
+
+                        <button class="calc-btn" onclick="desktop.calcInput('1')">1</button>
+                        <button class="calc-btn" onclick="desktop.calcInput('2')">2</button>
+                        <button class="calc-btn" onclick="desktop.calcInput('3')">3</button>
+                        <button class="calc-btn" onclick="desktop.calcEquals()" style="background: var(--success-color); grid-row: span 2;">=</button>
+
+                        <button class="calc-btn" onclick="desktop.calcInput('0')" style="grid-column: span 2;">0</button>
+                        <button class="calc-btn" onclick="desktop.calcInput('.')">.</button>
+                    </div>
+                    <style>
+                        .calc-btn {
+                            padding: 15px;
+                            background: var(--primary-color);
+                            border: none;
+                            border-radius: 8px;
+                            color: white;
+                            font-size: 18px;
+                            cursor: pointer;
+                            transition: all 0.2s ease;
+                        }
+                        .calc-btn:hover {
+                            opacity: 0.8;
+                            transform: translateY(-1px);
+                        }
+                    </style>
+                `;
+            }
+
+            async initFileManager(appId) {
+                try {
+                    const token = localStorage.getItem('accessToken');
+                    const response = await fetch(`${this.apiBase}/files/`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        this.displayFiles(data.files);
+                    } else {
+                        throw new Error('Failed to load files');
+                    }
+                } catch (error) {
+                    console.error('File manager error:', error);
+                    document.getElementById('fileGrid').innerHTML = '<div style="text-align: center; color: var(--error-color); grid-column: 1/-1;">Error loading files</div>';
+                }
+            }
+
+            displayFiles(files) {
+                const fileGrid = document.getElementById('fileGrid');
+                if (!files || files.length === 0) {
+                    fileGrid.innerHTML = '<div style="text-align: center; color: #888; grid-column: 1/-1;">No files found</div>';
+                    return;
+                }
+
+                fileGrid.innerHTML = files.map(file => `
+                    <div class="file-item" data-file="${file.name}">
+                        <div class="file-icon">
+                            <i class="fas ${this.getFileIcon(file)}"></i>
+                        </div>
+                        <div class="file-name">${file.name}</div>
+                    </div>
+                `).join('');
+            }
+
+            getFileIcon(file) {
+                if (file.type === 'folder') return 'fa-folder';
+
+                const ext = file.name.split('.').pop().toLowerCase();
+                switch (ext) {
+                    case 'txt': case 'md': return 'fa-file-text';
+                    case 'jpg': case 'jpeg': case 'png': case 'gif': return 'fa-file-image';
+                    case 'pdf': return 'fa-file-pdf';
+                    case 'doc': case 'docx': return 'fa-file-word';
+                    case 'zip': case 'rar': return 'fa-file-archive';
+                    case 'mp3': case 'wav': return 'fa-file-audio';
+                    case 'mp4': case 'avi': return 'fa-file-video';
+                    default: return 'fa-file';
+                }
+            }
+
+            makeDraggable(windowEl) {
+                const header = windowEl.querySelector('.window-header');
+                let isDragging = false;
+                let startX, startY, startLeft, startTop;
+
+                header.addEventListener('mousedown', (e) => {
+                    isDragging = true;
+                    startX = e.clientX;
+                    startY = e.clientY;
+                    startLeft = parseInt(windowEl.style.left);
+                    startTop = parseInt(windowEl.style.top);
+
+                    this.focusWindow(windowEl.id.replace('window-', ''));
+                });
+
+                document.addEventListener('mousemove', (e) => {
+                    if (!isDragging) return;
+
+                    const deltaX = e.clientX - startX;
+                    const deltaY = e.clientY - startY;
+
+                    windowEl.style.left = (startLeft + deltaX) + 'px';
+                    windowEl.style.top = (startTop + deltaY) + 'px';
+                });
+
+                document.addEventListener('mouseup', () => {
+                    isDragging = false;
+                });
+            }
+
+            makeResizable(windowEl) {
+                // Add resize handles (simplified)
+                const resizeHandle = document.createElement('div');
+                resizeHandle.style.cssText = `
+                    position: absolute;
+                    bottom: 0;
+                    right: 0;
+                    width: 20px;
+                    height: 20px;
+                    cursor: se-resize;
+                    background: transparent;
+                `;
+                windowEl.appendChild(resizeHandle);
+
+                let isResizing = false;
+                let startX, startY, startWidth, startHeight;
+
+                resizeHandle.addEventListener('mousedown', (e) => {
+                    isResizing = true;
+                    startX = e.clientX;
+                    startY = e.clientY;
+                    startWidth = parseInt(windowEl.style.width);
+                    startHeight = parseInt(windowEl.style.height);
+                    e.stopPropagation();
+                });
+
+                document.addEventListener('mousemove', (e) => {
+                    if (!isResizing) return;
+
+                    const deltaX = e.clientX - startX;
+                    const deltaY = e.clientY - startY;
+
+                    windowEl.style.width = Math.max(300, startWidth + deltaX) + 'px';
+                    windowEl.style.height = Math.max(200, startHeight + deltaY) + 'px';
+                });
+
+                document.addEventListener('mouseup', () => {
+                    isResizing = false;
+                });
+            }
+
+            focusWindow(windowId) {
+                const window = this.windows.get(windowId);
+                if (window) {
+                    window.style.zIndex = ++this.windowZIndex;
+                    this.activeWindow = windowId;
+
+                    // Update taskbar
+                    document.querySelectorAll('.taskbar-item').forEach(item => {
+                        item.classList.remove('active');
+                    });
+
+                    const taskbarItem = document.querySelector(`[data-window="${windowId}"]`);
+                    if (taskbarItem) {
+                        taskbarItem.classList.add('active');
+                    }
+                }
+            }
+
+            closeWindow(windowId) {
+                const window = this.windows.get(windowId);
+                if (window) {
+                    window.remove();
+                    this.windows.delete(windowId);
+
+                    // Remove from taskbar
+                    const taskbarItem = document.querySelector(`[data-window="${windowId}"]`);
+                    if (taskbarItem) {
+                        taskbarItem.remove();
+                    }
+                }
+            }
+
+            minimizeWindow(windowId) {
+                const window = this.windows.get(windowId);
+                if (window) {
+                    window.style.display = 'none';
+
+                    // Update taskbar item
+                    const taskbarItem = document.querySelector(`[data-window="${windowId}"]`);
+                    if (taskbarItem) {
+                        taskbarItem.classList.remove('active');
+                        taskbarItem.addEventListener('click', () => {
+                            window.style.display = 'block';
+                            this.focusWindow(windowId);
+                        }, { once: true });
+                    }
+                }
+            }
+
+            toggleMaximize(windowId) {
+                const window = this.windows.get(windowId);
+                if (window) {
+                    window.classList.toggle('maximized');
+                }
+            }
+
+            addToTaskbar(windowId, app) {
+                const taskbarItems = document.getElementById('taskbarItems');
+                const item = document.createElement('div');
+                item.className = 'taskbar-item';
+                item.dataset.window = windowId;
+                item.innerHTML = `
+                    <i class="${app.icon}"></i>
+                    <span style="margin-left: 8px;">${app.name}</span>
+                `;
+
+                item.addEventListener('click', () => {
+                    this.focusWindow(windowId);
+                });
+
+                taskbarItems.appendChild(item);
+            }
+
+            showContextMenu(x, y) {
+                const contextMenu = document.getElementById('contextMenu');
+                contextMenu.style.display = 'block';
+                contextMenu.style.left = x + 'px';
+                contextMenu.style.top = y + 'px';
+            }
+
+            hideContextMenu() {
+                document.getElementById('contextMenu').style.display = 'none';
+            }
+
+            showUserMenu() {
+                // TODO: Implement user menu
+                this.showNotification('User menu coming soon!');
+            }
+
+            showNotification(message, type = 'info') {
+                const container = document.getElementById('notificationContainer');
+                const notification = document.createElement('div');
+                notification.className = `notification ${type}`;
+                notification.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span>${message}</span>
+                        <i class="fas fa-times" style="cursor: pointer; opacity: 0.7;" onclick="this.parentElement.parentElement.remove()"></i>
+                    </div>
+                `;
+
+                container.appendChild(notification);
+
+                // Auto remove after 5 seconds
+                setTimeout(() => {
+                    if (notification.parentElement) {
+                        notification.remove();
+                    }
+                }, 5000);
+            }
+
+            updateTime() {
+                const timeDisplay = document.getElementById('timeDisplay');
+                const now = new Date();
+
+                const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                const date = now.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' });
+
+                timeDisplay.innerHTML = `
+                    <div class="time">${time}</div>
+                    <div class="date" style="font-size: 0.7rem; opacity: 0.8;">${date}</div>
+                `;
+
+                setTimeout(() => this.updateTime(), 1000);
+            }
+
+            setupWebSocket() {
+                try {
+                    this.ws = new WebSocket(`ws://${window.location.host}/ws/notifications`);
+
+                    this.ws.onopen = () => {
+                        console.log('WebSocket connected');
+                    };
+
+                    this.ws.onmessage = (event) => {
+                        const data = JSON.parse(event.data);
+                        this.showNotification(data.message, data.type);
+                    };
+
+                    this.ws.onerror = (error) => {
+                        console.error('WebSocket error:', error);
+                    };
+                } catch (error) {
+                    console.error('WebSocket connection failed:', error);
+                }
+            }
+
+            handleKeyboardShortcuts(e) {
+                if (e.ctrlKey || e.metaKey) {
+                    switch (e.key) {
+                        case 'f':
+                            e.preventDefault();
+                            this.openApp('filemanager');
+                            break;
+                        case 't':
+                            e.preventDefault();
+                            this.openApp('terminal');
+                            break;
+                        case 's':
+                            e.preventDefault();
+                            this.openApp('settings');
+                            break;
+                    }
+                }
+            }
+
+            // App-specific methods
+            async fileManagerRefresh() {
+                await this.initFileManager('filemanager');
+                this.showNotification('Files refreshed');
+            }
+
+            fileManagerUpload() {
+                document.getElementById('fileInput').click();
+            }
+
+            fileManagerNewFolder() {
+                const name = prompt('Enter folder name:');
+                if (name) {
+                    this.showNotification(`Creating folder: ${name}`);
+                    // TODO: Implement folder creation
+                }
+            }
+
+            textEditorNew() {
+                document.getElementById('textEditor').value = '';
+                this.showNotification('New document created');
+            }
+
+            textEditorSave() {
+                const content = document.getElementById('textEditor').value;
+                // TODO: Implement file saving
+                this.showNotification('Document saved');
+            }
+
+            // Calculator methods
+            calcInput(value) {
+                const display = document.getElementById('calcDisplay');
+                if (display.textContent === '0') {
+                    display.textContent = value;
+                } else {
+                    display.textContent += value;
+                }
+            }
+
+            calcClear() {
+                document.getElementById('calcDisplay').textContent = '0';
+            }
+
+            calcBackspace() {
+                const display = document.getElementById('calcDisplay');
+                if (display.textContent.length > 1) {
+                    display.textContent = display.textContent.slice(0, -1);
+                } else {
+                    display.textContent = '0';
+                }
+            }
+
+            calcEquals() {
+                const display = document.getElementById('calcDisplay');
+                try {
+                    // Simple math evaluation (be careful with eval in production)
+                    const result = eval(display.textContent.replace('×', '*').replace('÷', '/'));
+                    display.textContent = result;
+                } catch (error) {
+                    display.textContent = 'Error';
+                    setTimeout(() => this.calcClear(), 1500);
+                }
+            }
+
+            logout() {
+                localStorage.clear();
+                this.showNotification('Logging out...', 'success');
+                setTimeout(() => {
+                    window.location.href = '/login';
+                }, 1000);
+            }
+        }
+
+        // Initialize desktop
+        let desktop;
+        document.addEventListener('DOMContentLoaded', () => {
+            desktop = new EmberFrameDesktop();
+            window.desktop = desktop; // Make globally accessible
+        });
+    </script>
+</body>
+</html>

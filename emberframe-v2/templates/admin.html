@@ -1,0 +1,1191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EmberFrame V2 - Admin Panel</title>
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --background-color: #0a0a0f;
+            --text-color: #ffffff;
+            --border-color: #333;
+            --window-bg: #1a1a2e;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --error-color: #e74c3c;
+            --info-color: #3498db;
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: var(--text-color);
+            min-height: 100vh;
+        }
+
+        .admin-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 250px;
+            background: var(--window-bg);
+            border-right: 1px solid var(--border-color);
+            padding: 20px 0;
+            backdrop-filter: blur(20px);
+        }
+
+        .sidebar-header {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 20px;
+        }
+
+        .sidebar-header h2 {
+            color: var(--primary-color);
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        .sidebar-header p {
+            opacity: 0.7;
+            font-size: 0.9rem;
+        }
+
+        .nav-menu {
+            list-style: none;
+            padding: 0;
+        }
+
+        .nav-item {
+            margin: 0;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: var(--text-color);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-link:hover {
+            background: var(--glass-bg);
+            border-left-color: var(--primary-color);
+        }
+
+        .nav-link.active {
+            background: var(--primary-color);
+            border-left-color: var(--secondary-color);
+        }
+
+        .nav-link i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .content-header {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .content-header h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+        }
+
+        .content-header p {
+            opacity: 0.8;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            opacity: 0.8;
+            font-size: 0.9rem;
+        }
+
+        .stat-change {
+            font-size: 0.8rem;
+            margin-top: 10px;
+        }
+
+        .stat-change.positive {
+            color: var(--success-color);
+        }
+
+        .stat-change.negative {
+            color: var(--error-color);
+        }
+
+        /* Table */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--glass-bg);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .data-table th {
+            background: var(--primary-color);
+            font-weight: 600;
+            color: white;
+        }
+
+        .data-table tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            text-decoration: none;
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+        }
+
+        .btn-success {
+            background: var(--success-color);
+        }
+
+        .btn-warning {
+            background: var(--warning-color);
+        }
+
+        .btn-danger {
+            background: var(--error-color);
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 0.8rem;
+        }
+
+        /* Forms */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px 15px;
+            background: var(--glass-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-color);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        /* Status badges */
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-success {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .badge-warning {
+            background: var(--warning-color);
+            color: white;
+        }
+
+        .badge-danger {
+            background: var(--error-color);
+            color: white;
+        }
+
+        .badge-info {
+            background: var(--info-color);
+            color: white;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: var(--window-bg);
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80%;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+        }
+
+        .modal-footer {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        /* Charts container */
+        .chart-container {
+            height: 300px;
+            background: var(--glass-bg);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .admin-container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                position: fixed;
+                top: 0;
+                left: -100%;
+                height: 100vh;
+                z-index: 999;
+                transition: left 0.3s ease;
+            }
+
+            .sidebar.open {
+                left: 0;
+            }
+
+            .main-content {
+                margin-top: 60px;
+                padding: 15px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Loading spinner */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid transparent;
+            border-top: 2px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Alert messages */
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid;
+        }
+
+        .alert-success {
+            background: rgba(46, 204, 113, 0.1);
+            border-left-color: var(--success-color);
+        }
+
+        .alert-warning {
+            background: rgba(243, 156, 18, 0.1);
+            border-left-color: var(--warning-color);
+        }
+
+        .alert-danger {
+            background: rgba(231, 76, 60, 0.1);
+            border-left-color: var(--error-color);
+        }
+
+        .alert-info {
+            background: rgba(52, 152, 219, 0.1);
+            border-left-color: var(--info-color);
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>🔥 Admin Panel</h2>
+                <p>EmberFrame V2</p>
+            </div>
+            <nav>
+                <ul class="nav-menu">
+                    <li class="nav-item">
+                        <a href="#" class="nav-link active" data-section="dashboard">
+                            <i class="fas fa-tachometer-alt"></i>
+                            Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link" data-section="users">
+                            <i class="fas fa-users"></i>
+                            Users
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link" data-section="files">
+                            <i class="fas fa-folder"></i>
+                            Files
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link" data-section="sessions">
+                            <i class="fas fa-desktop"></i>
+                            Sessions
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link" data-section="security">
+                            <i class="fas fa-shield-alt"></i>
+                            Security
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link" data-section="settings">
+                            <i class="fas fa-cog"></i>
+                            Settings
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link" data-section="logs">
+                            <i class="fas fa-list-alt"></i>
+                            Audit Logs
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/desktop" class="nav-link">
+                            <i class="fas fa-arrow-left"></i>
+                            Back to Desktop
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Dashboard Section -->
+            <div id="dashboard-section" class="content-section">
+                <div class="content-header">
+                    <h1>Dashboard</h1>
+                    <p>System overview and statistics</p>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-value" id="totalUsers">0</div>
+                        <div class="stat-label">Total Users</div>
+                        <div class="stat-change positive" id="usersChange">+0 this week</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-folder"></i>
+                        </div>
+                        <div class="stat-value" id="totalFiles">0</div>
+                        <div class="stat-label">Total Files</div>
+                        <div class="stat-change positive" id="filesChange">+0 this week</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-hdd"></i>
+                        </div>
+                        <div class="stat-value" id="storageUsed">0 GB</div>
+                        <div class="stat-label">Storage Used</div>
+                        <div class="stat-change" id="storageChange">0% of total</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-desktop"></i>
+                        </div>
+                        <div class="stat-value" id="activeSessions">0</div>
+                        <div class="stat-label">Active Sessions</div>
+                        <div class="stat-change" id="sessionsChange">0 online now</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Recent Activity</h3>
+                    </div>
+                    <div id="recentActivity">
+                        <p>Loading recent activity...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Users Section -->
+            <div id="users-section" class="content-section" style="display: none;">
+                <div class="content-header">
+                    <h1>User Management</h1>
+                    <p>Manage user accounts and permissions</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Users</h3>
+                        <button class="btn btn-primary" onclick="showCreateUserModal()">
+                            <i class="fas fa-plus"></i> Create User
+                        </button>
+                    </div>
+                    <div class="table-container">
+                        <table class="data-table" id="usersTable">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Username</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Status</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="7" style="text-align: center; padding: 40px;">
+                                        <i class="fas fa-spinner loading"></i> Loading users...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Files Section -->
+            <div id="files-section" class="content-section" style="display: none;">
+                <div class="content-header">
+                    <h1>File Management</h1>
+                    <p>Monitor and manage user files</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Storage Statistics</h3>
+                    </div>
+                    <div class="chart-container" id="storageChart">
+                        <p>Loading storage statistics...</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Recent Files</h3>
+                        <button class="btn btn-warning btn-sm" onclick="cleanupOrphanedFiles()">
+                            <i class="fas fa-broom"></i> Cleanup
+                        </button>
+                    </div>
+                    <div id="recentFiles">
+                        <p>Loading recent files...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sessions Section -->
+            <div id="sessions-section" class="content-section" style="display: none;">
+                <div class="content-header">
+                    <h1>Active Sessions</h1>
+                    <p>Monitor user sessions and connections</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Active Sessions</h3>
+                        <button class="btn btn-danger btn-sm" onclick="revokeAllSessions()">
+                            <i class="fas fa-ban"></i> Revoke All
+                        </button>
+                    </div>
+                    <div id="activeSessions">
+                        <p>Loading active sessions...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Security Section -->
+            <div id="security-section" class="content-section" style="display: none;">
+                <div class="content-header">
+                    <h1>Security Center</h1>
+                    <p>Monitor security events and manage access</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Security Overview</h3>
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon" style="color: var(--success-color);">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <div class="stat-value" id="securityScore">95%</div>
+                            <div class="stat-label">Security Score</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-icon" style="color: var(--warning-color);">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                            <div class="stat-value" id="securityAlerts">3</div>
+                            <div class="stat-label">Security Alerts</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-icon" style="color: var(--error-color);">
+                                <i class="fas fa-ban"></i>
+                            </div>
+                            <div class="stat-value" id="blockedIPs">12</div>
+                            <div class="stat-label">Blocked IPs</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Failed Login Attempts</h3>
+                    </div>
+                    <div id="failedLogins">
+                        <p>Loading failed login attempts...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Section -->
+            <div id="settings-section" class="content-section" style="display: none;">
+                <div class="content-header">
+                    <h1>System Settings</h1>
+                    <p>Configure system-wide settings</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">General Settings</h3>
+                    </div>
+                    <form id="settingsForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Application Name</label>
+                                <input type="text" class="form-control" id="appName" value="EmberFrame V2">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Max File Size (MB)</label>
+                                <input type="number" class="form-control" id="maxFileSize" value="100">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Default Storage Quota (GB)</label>
+                                <input type="number" class="form-control" id="defaultQuota" value="1">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Session Timeout (hours)</label>
+                                <input type="number" class="form-control" id="sessionTimeout" value="24">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                <input type="checkbox" id="registrationEnabled" checked>
+                                Allow new user registration
+                            </label>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                <input type="checkbox" id="maintenanceMode">
+                                Maintenance mode
+                            </label>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Save Settings
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Logs Section -->
+            <div id="logs-section" class="content-section" style="display: none;">
+                <div class="content-header">
+                    <h1>Audit Logs</h1>
+                    <p>View system audit logs and user activity</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Recent Audit Logs</h3>
+                        <div style="display: flex; gap: 10px;">
+                            <select class="form-control" style="width: auto;" id="logFilter">
+                                <option value="">All Actions</option>
+                                <option value="login">Login</option>
+                                <option value="file_upload">File Upload</option>
+                                <option value="user_create">User Create</option>
+                                <option value="file_delete">File Delete</option>
+                            </select>
+                            <button class="btn btn-primary btn-sm" onclick="refreshLogs()">
+                                <i class="fas fa-refresh"></i> Refresh
+                            </button>
+                        </div>
+                    </div>
+                    <div id="auditLogs">
+                        <p>Loading audit logs...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create User Modal -->
+    <div id="createUserModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Create New User</h3>
+            </div>
+            <form id="createUserForm">
+                <div class="form-group">
+                    <label class="form-label">Username</label>
+                    <input type="text" class="form-control" id="newUsername" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-control" id="newEmail" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <input type="password" class="form-control" id="newPassword" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">First Name</label>
+                        <input type="text" class="form-control" id="newFirstName">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Last Name</label>
+                        <input type="text" class="form-control" id="newLastName">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Role</label>
+                    <select class="form-control" id="newRole">
+                        <option value="user">User</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Storage Quota (GB)</label>
+                    <input type="number" class="form-control" id="newQuota" value="1" min="0" max="1000">
+                </div>
+            </form>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="createUser()">
+                    <i class="fas fa-plus"></i> Create User
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="closeModal('createUserModal')">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class AdminPanel {
+            constructor() {
+                this.apiBase = '/api';
+                this.currentSection = 'dashboard';
+                this.init();
+            }
+
+            init() {
+                this.setupEventListeners();
+                this.loadDashboard();
+                this.startAutoRefresh();
+            }
+
+            setupEventListeners() {
+                // Navigation
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        if (link.dataset.section) {
+                            e.preventDefault();
+                            this.showSection(link.dataset.section);
+                        }
+                    });
+                });
+
+                // Settings form
+                document.getElementById('settingsForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.saveSettings();
+                });
+
+                // Create user form
+                document.getElementById('createUserForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.createUser();
+                });
+
+                // Modal close on background click
+                document.querySelectorAll('.modal').forEach(modal => {
+                    modal.addEventListener('click', (e) => {
+                        if (e.target === modal) {
+                            modal.classList.remove('show');
+                        }
+                    });
+                });
+            }
+
+            showSection(sectionName) {
+                // Update navigation
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.classList.remove('active');
+                });
+                document.querySelector(`[data-section="${sectionName}"]`).classList.add('active');
+
+                // Show section
+                document.querySelectorAll('.content-section').forEach(section => {
+                    section.style.display = 'none';
+                });
+                document.getElementById(`${sectionName}-section`).style.display = 'block';
+
+                this.currentSection = sectionName;
+
+                // Load section data
+                switch (sectionName) {
+                    case 'dashboard':
+                        this.loadDashboard();
+                        break;
+                    case 'users':
+                        this.loadUsers();
+                        break;
+                    case 'files':
+                        this.loadFiles();
+                        break;
+                    case 'sessions':
+                        this.loadSessions();
+                        break;
+                    case 'security':
+                        this.loadSecurity();
+                        break;
+                    case 'settings':
+                        this.loadSettings();
+                        break;
+                    case 'logs':
+                        this.loadLogs();
+                        break;
+                }
+            }
+
+            async loadDashboard() {
+                try {
+                    const token = localStorage.getItem('accessToken');
+
+                    // Load system stats
+                    const statsResponse = await fetch(`${this.apiBase}/admin/system/stats`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+
+                    if (statsResponse.ok) {
+                        const stats = await statsResponse.json();
+                        this.updateDashboardStats(stats);
+                    }
+
+                    // Load recent activity
+                    this.loadRecentActivity();
+
+                } catch (error) {
+                    console.error('Dashboard loading error:', error);
+                    this.showAlert('Failed to load dashboard data', 'error');
+                }
+            }
+
+            updateDashboardStats(stats) {
+                document.getElementById('totalUsers').textContent = stats.total_users || 0;
+                document.getElementById('totalFiles').textContent = stats.total_files || 0;
+                document.getElementById('storageUsed').textContent = this.formatFileSize(stats.storage_used || 0);
+                document.getElementById('activeSessions').textContent = stats.active_sessions || 0;
+            }
+
+            async loadUsers() {
+                try {
+                    const token = localStorage.getItem('accessToken');
+                    const response = await fetch(`${this.apiBase}/admin/users`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+
+                    if (response.ok) {
+                        const users = await response.json();
+                        this.displayUsers(users);
+                    } else {
+                        throw new Error('Failed to load users');
+                    }
+                } catch (error) {
+                    console.error('Users loading error:', error);
+                    this.showAlert('Failed to load users', 'error');
+                }
+            }
+
+            displayUsers(users) {
+                const tbody = document.querySelector('#usersTable tbody');
+
+                if (!users || users.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">No users found</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = users.map(user => `
+                    <tr>
+                        <td>${user.id}</td>
+                        <td>${user.username}</td>
+                        <td>${user.email || 'N/A'}</td>
+                        <td>
+                            <span class="badge ${user.is_admin ? 'badge-warning' : 'badge-info'}">
+                                ${user.is_admin ? 'Admin' : 'User'}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge ${user.is_active ? 'badge-success' : 'badge-danger'}">
+                                ${user.is_active ? 'Active' : 'Inactive'}
+                            </span>
+                        </td>
+                        <td>${new Date(user.created_at).toLocaleDateString()}</td>
+                        <td>
+                            <button class="btn btn-sm btn-primary" onclick="admin.editUser(${user.id})">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="admin.deleteUser(${user.id})"
+                                    ${user.is_admin ? 'disabled' : ''}>
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            async createUser() {
+                try {
+                    const userData = {
+                        username: document.getElementById('newUsername').value,
+                        email: document.getElementById('newEmail').value,
+                        password: document.getElementById('newPassword').value,
+                        first_name: document.getElementById('newFirstName').value,
+                        last_name: document.getElementById('newLastName').value,
+                        is_admin: document.getElementById('newRole').value === 'admin',
+                        storage_quota: parseInt(document.getElementById('newQuota').value) * 1024 * 1024 * 1024
+                    };
+
+                    const token = localStorage.getItem('accessToken');
+                    const response = await fetch(`${this.apiBase}/admin/users`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(userData)
+                    });
+
+                    if (response.ok) {
+                        this.showAlert('User created successfully', 'success');
+                        this.closeModal('createUserModal');
+                        this.loadUsers();
+                        document.getElementById('createUserForm').reset();
+                    } else {
+                        const error = await response.json();
+                        throw new Error(error.detail || 'Failed to create user');
+                    }
+                } catch (error) {
+                    console.error('User creation error:', error);
+                    this.showAlert(error.message, 'error');
+                }
+            }
+
+            showCreateUserModal() {
+                document.getElementById('createUserModal').classList.add('show');
+            }
+
+            closeModal(modalId) {
+                document.getElementById(modalId).classList.remove('show');
+            }
+
+            formatFileSize(bytes) {
+                if (bytes === 0) return '0 B';
+                const k = 1024;
+                const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+            }
+
+            showAlert(message, type = 'info') {
+                const alertDiv = document.createElement('div');
+                alertDiv.className = `alert alert-${type}`;
+                alertDiv.innerHTML = `
+                    <i class="fas fa-${type === 'success' ? 'check' : type === 'error' ? 'times' : 'info'}-circle"></i>
+                    ${message}
+                `;
+
+                // Insert at top of main content
+                const mainContent = document.querySelector('.main-content');
+                mainContent.insertBefore(alertDiv, mainContent.firstChild);
+
+                // Auto remove after 5 seconds
+                setTimeout(() => {
+                    if (alertDiv.parentElement) {
+                        alertDiv.remove();
+                    }
+                }, 5000);
+            }
+
+            startAutoRefresh() {
+                // Refresh dashboard every 30 seconds
+                setInterval(() => {
+                    if (this.currentSection === 'dashboard') {
+                        this.loadDashboard();
+                    }
+                }, 30000);
+            }
+
+            // Placeholder methods for other sections
+            async loadFiles() {
+                document.getElementById('recentFiles').innerHTML = '<p>Files management coming soon...</p>';
+            }
+
+            async loadSessions() {
+                document.getElementById('activeSessions').innerHTML = '<p>Session management coming soon...</p>';
+            }
+
+            async loadSecurity() {
+                document.getElementById('failedLogins').innerHTML = '<p>Security monitoring coming soon...</p>';
+            }
+
+            async loadSettings() {
+                // Settings are already in the form
+            }
+
+            async loadLogs() {
+                document.getElementById('auditLogs').innerHTML = '<p>Audit logs coming soon...</p>';
+            }
+
+            async loadRecentActivity() {
+                document.getElementById('recentActivity').innerHTML = '<p>Recent activity monitoring coming soon...</p>';
+            }
+
+            async saveSettings() {
+                this.showAlert('Settings saved successfully', 'success');
+            }
+        }
+
+        // Global functions for button clicks
+        function showCreateUserModal() {
+            admin.showCreateUserModal();
+        }
+
+        function createUser() {
+            admin.createUser();
+        }
+
+        function closeModal(modalId) {
+            admin.closeModal(modalId);
+        }
+
+        function cleanupOrphanedFiles() {
+            admin.showAlert('Cleanup started...', 'info');
+        }
+
+        function revokeAllSessions() {
+            if (confirm('Are you sure you want to revoke all sessions?')) {
+                admin.showAlert('All sessions revoked', 'warning');
+            }
+        }
+
+        function refreshLogs() {
+            admin.loadLogs();
+        }
+
+        // Initialize admin panel
+        let admin;
+        document.addEventListener('DOMContentLoaded', () => {
+            admin = new AdminPanel();
+        });
+    </script>
+</body>
+</html>

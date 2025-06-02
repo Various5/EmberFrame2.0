@@ -1,41 +1,4 @@
-"""
-EmberFrame V2 - Enhanced Main Application Entry Point
-"""
-
-import uvicorn
-from fastapi import FastAPI, Request, Depends
-from fastapi.responses import HTMLResponse, RedirectResponse
-from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
-from sqlalchemy.orm import Session
-
-from app import create_app
-from app.core.config import get_settings
-from app.core.database import create_tables, get_db
-from app.core.dependencies import get_current_user
-from app.models.user import User
-from app.utils.logging import setup_logging
-
-# Setup logging
-setup_logging()
-
-# Create tables
-create_tables()
-
-# Create app
-app = create_app()
-
-# Setup templates
-templates = Jinja2Templates(directory="templates")
-
-# Mount static files
-app.mount("/static", StaticFiles(directory="static"), name="static")
-
-# Settings
-settings = get_settings()
-
-# Login page HTML content
-LOGIN_PAGE_HTML = '''<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -251,7 +214,7 @@ LOGIN_PAGE_HTML = '''<!DOCTYPE html>
 </head>
 <body>
     <div class="floating-particles" id="particles"></div>
-    
+
     <div class="login-container">
         <div class="logo">
             <h1>🔥 EmberFrame</h1>
@@ -349,7 +312,7 @@ LOGIN_PAGE_HTML = '''<!DOCTYPE html>
 
             async handleLogin(e) {
                 e.preventDefault();
-                
+
                 const username = document.getElementById('username').value;
                 const password = document.getElementById('password').value;
 
@@ -381,7 +344,7 @@ LOGIN_PAGE_HTML = '''<!DOCTYPE html>
                         }));
 
                         this.showAlert('Login successful! Redirecting...', 'success');
-                        
+
                         // Redirect to desktop
                         setTimeout(() => {
                             window.location.href = '/desktop';
@@ -407,7 +370,7 @@ LOGIN_PAGE_HTML = '''<!DOCTYPE html>
 
             async verifyToken(token) {
                 try {
-                    const response = await fetch(`${this.apiBase}/users/me`, {
+                    const response = await fetch(`${this.apiBase}/auth/me`, {
                         headers: {
                             'Authorization': `Bearer ${token}`
                         }
@@ -439,186 +402,4 @@ LOGIN_PAGE_HTML = '''<!DOCTYPE html>
         });
     </script>
 </body>
-</html>'''
-
-# Desktop page HTML content (embedded for now, could be moved to template)
-DESKTOP_PAGE_HTML = '''<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EmberFrame V2 - Desktop</title>
-    <link rel="stylesheet" href="/static/css/main.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-</head>
-<body>
-    <div class="desktop" id="desktop">
-        <div class="desktop-content">
-            <div class="desktop-icons" id="desktopIcons">
-                <div class="desktop-icon" data-app="filemanager">
-                    <i class="fas fa-folder"></i>
-                    <span>Files</span>
-                </div>
-                <div class="desktop-icon" data-app="settings">
-                    <i class="fas fa-cog"></i>
-                    <span>Settings</span>
-                </div>
-                <div class="desktop-icon" data-app="texteditor">
-                    <i class="fas fa-edit"></i>
-                    <span>Text Editor</span>
-                </div>
-                <div class="desktop-icon" data-app="calculator">
-                    <i class="fas fa-calculator"></i>
-                    <span>Calculator</span>
-                </div>
-                <div class="desktop-icon" data-app="terminal">
-                    <i class="fas fa-terminal"></i>
-                    <span>Terminal</span>
-                </div>
-                <div class="desktop-icon" data-app="imageviewer">
-                    <i class="fas fa-image"></i>
-                    <span>Images</span>
-                </div>
-            </div>
-        </div>
-
-        <div class="taskbar">
-            <div class="start-button" id="startButton">
-                <span>🔥 Start</span>
-            </div>
-            
-            <div class="taskbar-items" id="taskbarItems">
-                <!-- Running applications will appear here -->
-            </div>
-            
-            <div class="system-tray">
-                <div class="system-icon" id="notificationIcon">
-                    <i class="fas fa-bell"></i>
-                </div>
-                <div class="system-icon" id="networkIcon">
-                    <i class="fas fa-wifi"></i>
-                </div>
-                <div class="system-icon" id="userIcon">
-                    <i class="fas fa-user"></i>
-                </div>
-                <div class="time-display" id="timeDisplay">
-                    <div class="time">12:00</div>
-                    <div class="date" style="font-size: 0.7rem; opacity: 0.8;">Mon, Jan 1</div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Notification Container -->
-    <div class="notification-container" id="notificationContainer"></div>
-
-    <!-- Context Menu -->
-    <div class="context-menu" id="contextMenu">
-        <div class="context-menu-item" data-action="refresh">
-            <i class="fas fa-sync"></i> Refresh
-        </div>
-        <div class="context-menu-item" data-action="paste">
-            <i class="fas fa-paste"></i> Paste
-        </div>
-        <div class="context-menu-item" data-action="properties">
-            <i class="fas fa-info-circle"></i> Properties
-        </div>
-    </div>
-
-    <script src="/static/js/core/desktop.js"></script>
-</body>
-</html>'''
-
-
-@app.get("/", response_class=HTMLResponse)
-async def root():
-    """Root endpoint - redirect to login or desktop based on auth"""
-    return RedirectResponse(url="/login")
-
-
-@app.get("/login", response_class=HTMLResponse)
-async def login_page():
-    """Serve login page"""
-    return HTMLResponse(content=LOGIN_PAGE_HTML)
-
-
-@app.get("/desktop", response_class=HTMLResponse)
-async def desktop_page():
-    """Serve desktop page - requires authentication"""
-    return HTMLResponse(content=DESKTOP_PAGE_HTML)
-
-
-@app.get("/logout")
-async def logout():
-    """Logout endpoint"""
-    response = RedirectResponse(url="/login")
-    response.delete_cookie("access_token")
-    return response
-
-
-# Health check endpoint
-@app.get("/health")
-async def health_check():
-    """Health check endpoint"""
-    return {
-        "status": "healthy",
-        "app_name": settings.APP_NAME,
-        "version": "2.0.0"
-    }
-
-
-# Development endpoints
-if settings.DEBUG:
-    @app.get("/debug/users")
-    async def debug_users(db: Session = Depends(get_db)):
-        """Debug endpoint to list all users"""
-        from app.models.user import User
-        users = db.query(User).all()
-        return [
-            {
-                "id": user.id,
-                "username": user.username,
-                "email": user.email,
-                "is_admin": user.is_admin,
-                "is_active": user.is_active,
-                "created_at": user.created_at
-            }
-            for user in users
-        ]
-
-    @app.get("/debug/create-test-user")
-    async def create_test_user(db: Session = Depends(get_db)):
-        """Debug endpoint to create a test user"""
-        from app.models.user import User
-        from app.core.security import get_password_hash
-
-        # Check if test user exists
-        existing = db.query(User).filter(User.username == "testuser").first()
-        if existing:
-            return {"message": "Test user already exists"}
-
-        # Create test user
-        test_user = User(
-            username="testuser",
-            email="test@example.com",
-            hashed_password=get_password_hash("testpass123"),
-            first_name="Test",
-            last_name="User",
-            is_active=True,
-            is_admin=False
-        )
-
-        db.add(test_user)
-        db.commit()
-
-        return {"message": "Test user created", "username": "testuser", "password": "testpass123"}
-
-
-if __name__ == "__main__":
-    uvicorn.run(
-        "main:app",
-        host="0.0.0.0",
-        port=8000,
-        reload=settings.DEBUG,
-        log_level="info"
-    )
+</html>
