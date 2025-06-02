@@ -1,420 +1,123 @@
-# 🔥 EmberFrame V2 - Modern Web Desktop Environment
+# README.md
+# EmberFrame V2 🔥
 
-**EmberFrame V2** is a cutting-edge, full-featured web desktop environment that brings the power and familiarity of traditional desktop computing to the web browser. Built with modern technologies including FastAPI, React-like vanilla JavaScript, and comprehensive security features.
+**Next-Generation Web Desktop Environment**
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.104+-00a393.svg)](https://fastapi.tiangolo.com)
-[![Security: High](https://img.shields.io/badge/security-high-green.svg)](#security-features)
+EmberFrame V2 is a modern, full-featured web-based desktop environment with advanced file management, real-time collaboration, and extensive customization options.
 
-## 🌟 Features
+## ✨ Features
 
-### 🖥️ **Complete Desktop Environment**
-- **Window Management**: Draggable, resizable windows with minimize/maximize controls
-- **Taskbar**: Dynamic taskbar with running applications and system tray
-- **File Manager**: Full-featured file explorer with upload/download capabilities
-- **Desktop Icons**: Customizable desktop with application shortcuts
-- **Context Menus**: Right-click context menus throughout the interface
+### 🖥️ Desktop Environment
+- **Modern UI**: Glass-morphism design with smooth animations
+- **Multiple Themes**: Built-in themes with dark/light mode support
+- **Responsive Design**: Works perfectly on desktop, tablet, and mobile
+- **Real-time Updates**: WebSocket-powered live notifications
 
-### 📱 **Built-in Applications**
-- **File Manager**: Browse, upload, download, and organize files
-- **Text Editor**: Rich text editing with syntax highlighting
-- **Image Viewer**: View and manage image files
-- **Calculator**: Scientific calculator with memory functions
-- **Terminal**: Command-line interface for advanced users
-- **Settings**: Comprehensive system configuration
+### 📁 Advanced File Management
+- **Drag & Drop**: Intuitive file uploads and organization
+- **File Versioning**: Track and restore file versions
+- **Smart Search**: Full-text search with filters and suggestions
+- **File Sharing**: Secure sharing with permissions and expiration
+- **Thumbnails**: Automatic thumbnail generation for images and videos
 
-### 🔐 **Enterprise-Grade Security**
-- **JWT Authentication**: Secure token-based authentication
-- **Rate Limiting**: Prevent abuse with intelligent rate limiting
-- **File Validation**: Comprehensive file type and size validation
-- **Security Headers**: CSRF, XSS, and clickjacking protection
-- **Audit Logging**: Complete audit trail of user actions
-- **Session Management**: Secure session handling and cleanup
+### 🔐 Enterprise Security
+- **Multi-Factor Authentication**: TOTP-based 2FA support
+- **Advanced Password Security**: Strength validation and breach checking
+- **Session Management**: Multiple session tracking and control
+- **Audit Logging**: Comprehensive activity tracking
+- **Rate Limiting**: Protection against abuse and attacks
 
-### 🎨 **Customization & Themes**
-- **Multiple Themes**: Dark, light, and custom color schemes
-- **User Preferences**: Personalized settings and layouts
-- **Responsive Design**: Works on desktop, tablet, and mobile
-- **Accessibility**: WCAG compliant with keyboard navigation
+### 🚀 Performance & Scalability
+- **Async Architecture**: Built on FastAPI with async/await
+- **Redis Caching**: Fast data access and session storage
+- **Background Tasks**: Celery-powered task processing
+- **Database Optimization**: Efficient SQLAlchemy queries
+- **CDN Ready**: Static asset optimization
 
-### 🚀 **Performance & Scalability**
-- **Real-time Updates**: WebSocket-based live notifications
-- **Background Tasks**: Celery-powered asynchronous processing
-- **Caching**: Redis-based caching for optimal performance
-- **Database**: PostgreSQL with optimized queries
-- **File Storage**: Local and cloud storage support (S3)
-
-### 📊 **Admin Panel**
-- **User Management**: Create, edit, and manage user accounts
-- **System Monitoring**: Real-time system statistics and health
-- **Security Dashboard**: Monitor failed logins and security events
-- **Storage Analytics**: Track file usage and storage quotas
-- **Audit Logs**: Comprehensive activity logging
+### 🔧 Developer Experience
+- **RESTful API**: Comprehensive API with OpenAPI documentation
+- **WebSocket Support**: Real-time bidirectional communication
+- **Docker Ready**: Complete containerization with Docker Compose
+- **Test Coverage**: Extensive test suite with 80%+ coverage
+- **Type Safety**: Full TypeScript and Python type annotations
 
 ## 🚀 Quick Start
 
 ### Prerequisites
-
-- Python 3.11 or higher
+- Python 3.11+
+- Node.js 18+ (for frontend development)
 - PostgreSQL 13+ (or SQLite for development)
-- Redis 6+ (for caching and background tasks)
-- Node.js 16+ (for development tools, optional)
-
-### 1. Clone and Setup
-
-```bash
-# Clone the repository
-git clone https://github.com/your-org/emberframe-v2.git
-cd emberframe-v2
-
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install dependencies
-pip install -r requirements/development.txt
-```
-
-### 2. Environment Configuration
-
-```bash
-# Copy environment template
-cp .env.example .env
-
-# Edit configuration (required!)
-nano .env
-```
-
-**Essential settings to configure:**
-```env
-SECRET_KEY=your-super-secret-key-change-this
-DATABASE_URL=postgresql://user:password@localhost/emberframe
-REDIS_URL=redis://localhost:6379/0
-DEFAULT_ADMIN_USERNAME=admin
-DEFAULT_ADMIN_PASSWORD=change-this-secure-password
-```
-
-### 3. Database Setup
-
-```bash
-# Initialize database with default data
-python scripts/init_db.py init
-
-# Or manually create tables and admin user
-python scripts/init_db.py create-user admin admin@example.com admin123 --admin
-```
-
-### 4. Launch Application
-
-```bash
-# Development mode
-python main.py
-
-# Or with auto-reload
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
-```
-
-### 5. Access EmberFrame
-
-Open your browser and navigate to:
-- **Application**: http://localhost:8000
-- **API Docs**: http://localhost:8000/api/docs
-- **Login**: Use the admin credentials from step 2
-
-## 📁 Project Structure
-
-```
-emberframe-v2/
-├── 📁 app/                     # Main application
-│   ├── 📁 api/                # FastAPI endpoints
-│   │   ├── auth.py            # Authentication routes
-│   │   ├── files.py           # File management
-│   │   ├── users.py           # User management
-│   │   ├── admin.py           # Admin panel API
-│   │   └── websocket.py       # Real-time features
-│   │
-│   ├── 📁 core/               # Core functionality
-│   │   ├── config.py          # Configuration management
-│   │   ├── database.py        # Database setup
-│   │   ├── security.py        # Authentication & security
-│   │   └── dependencies.py    # Dependency injection
-│   │
-│   ├── 📁 models/             # Database models
-│   │   ├── user.py            # User model
-│   │   ├── file.py            # File model
-│   │   ├── session.py         # Session tracking
-│   │   └── audit.py           # Audit logging
-│   │
-│   ├── 📁 services/           # Business logic
-│   │   ├── auth_service.py    # Authentication logic
-│   │   ├── file_service.py    # File operations
-│   │   ├── user_service.py    # User management
-│   │   └── audit_service.py   # Audit logging
-│   │
-│   ├── 📁 schemas/            # Pydantic schemas
-│   │   ├── auth.py            # Authentication schemas
-│   │   ├── user.py            # User schemas
-│   │   └── file.py            # File schemas
-│   │
-│   ├── 📁 tasks/              # Background tasks
-│   │   ├── file_tasks.py      # File processing
-│   │   └── maintenance_tasks.py # System maintenance
-│   │
-│   └── 📁 utils/              # Utilities
-│       ├── validators.py      # Input validation
-│       ├── helpers.py         # Helper functions
-│       └── logging.py         # Logging setup
-│
-├── 📁 static/                 # Frontend assets
-│   ├── 📁 css/               # Stylesheets
-│   ├── 📁 js/                # JavaScript modules
-│   └── 📁 images/            # Static images
-│
-├── 📁 templates/             # HTML templates
-├── 📁 tests/                 # Test suite
-├── 📁 scripts/               # Utility scripts
-├── 📁 requirements/          # Dependencies
-├── 📁 config/                # Configuration files
-└── 📁 docker/                # Docker configurations
-```
-
-## 🔧 Configuration
-
-### Environment Variables
-
-| Variable | Description | Default | Required |
-|----------|-------------|---------|----------|
-| `DEBUG` | Enable debug mode | `false` | No |
-| `SECRET_KEY` | JWT signing key | None | **Yes** |
-| `DATABASE_URL` | Database connection | SQLite | No |
-| `REDIS_URL` | Redis connection | `redis://localhost:6379/0` | No |
-| `UPLOAD_DIR` | File upload directory | `uploads` | No |
-| `MAX_FILE_SIZE` | Max upload size (bytes) | `104857600` (100MB) | No |
-| `ALLOWED_HOSTS` | Allowed hostnames | `["*"]` | No |
-
-### Database Configuration
-
-**SQLite (Development):**
-```env
-DATABASE_URL=sqlite:///./emberframe.db
-```
-
-**PostgreSQL (Production):**
-```env
-DATABASE_URL=postgresql://username:password@localhost:5432/emberframe
-```
-
-### Redis Configuration
-
-**Local Redis:**
-```env
-REDIS_URL=redis://localhost:6379/0
-```
-
-**Redis with password:**
-```env
-REDIS_URL=redis://:password@localhost:6379/0
-```
-
-### File Storage Options
-
-**Local Storage (Default):**
-```env
-UPLOAD_DIR=uploads
-```
-
-**AWS S3 Storage:**
-```env
-AWS_ACCESS_KEY_ID=your-access-key
-AWS_SECRET_ACCESS_KEY=your-secret-key
-AWS_REGION=us-east-1
-S3_BUCKET=emberframe-files
-```
-
-## 🏗️ Development
+- Redis 6+
 
 ### Development Setup
 
+1. **Clone the repository**
 ```bash
-# Install development dependencies
-pip install -r requirements/development.txt
-
-# Install pre-commit hooks
-pre-commit install
-
-# Run development server with auto-reload
-python main.py
+git clone https://github.com/yourusername/emberframe-v2.git
+cd emberframe-v2
 ```
 
-### Code Quality Tools
-
+2. **Run the setup script**
 ```bash
-# Format code
-black .
-isort .
-
-# Lint code
-flake8 .
-mypy .
-
-# Run tests
-pytest
-
-# Run tests with coverage
-pytest --cov=app --cov-report=html
+chmod +x scripts/setup.sh
+./scripts/setup.sh dev
 ```
 
-### Database Migrations
-
+3. **Start the development server**
 ```bash
-# Create migration
-alembic revision --autogenerate -m "Description of changes"
-
-# Apply migrations
-alembic upgrade head
-
-# Rollback migration
-alembic downgrade -1
+./scripts/run.sh dev
 ```
 
-### Creating New Applications
+4. **Access the application**
+- Web Interface: http://localhost:8000
+- API Documentation: http://localhost:8000/api/docs
+- Admin Panel: http://localhost:8000/admin
 
-1. **Create application directory:**
+### Production Deployment
+
+#### Docker Deployment (Recommended)
+
+1. **Setup with Docker**
 ```bash
-mkdir static/js/apps/myapp
+chmod +x scripts/docker-setup.sh
+./scripts/docker-setup.sh
 ```
 
-2. **Create application JavaScript:**
-```javascript
-// static/js/apps/myapp/myapp.js
-class MyApp {
-    constructor(windowId) {
-        this.windowId = windowId;
-        this.init();
-    }
-    
-    init() {
-        // Initialize your application
-    }
-    
-    getHTML() {
-        return `<div>My Application Content</div>`;
-    }
-}
-```
-
-3. **Register in desktop.js:**
-```javascript
-this.apps.set('myapp', {
-    name: 'My Application',
-    icon: 'fas fa-star',
-    component: 'MyApp'
-});
-```
-
-## 🧪 Testing
-
-### Running Tests
-
+2. **Configure environment**
 ```bash
-# Run all tests
-pytest
-
-# Run specific test categories
-pytest tests/unit/          # Unit tests
-pytest tests/integration/   # Integration tests
-pytest tests/e2e/          # End-to-end tests
-
-# Run with coverage
-pytest --cov=app --cov-report=html --cov-report=term-missing
-
-# Run performance tests
-pytest tests/performance/ -m performance
+# Edit production settings
+nano .env
 ```
 
-### Test Categories
-
-- **Unit Tests**: Test individual functions and classes
-- **Integration Tests**: Test API endpoints and services
-- **End-to-End Tests**: Test complete user workflows
-- **Performance Tests**: Test system performance and scalability
-- **Security Tests**: Test security features and vulnerabilities
-
-### Writing Tests
-
-```python
-# tests/test_example.py
-import pytest
-from fastapi.testclient import TestClient
-
-def test_user_registration(client):
-    """Test user registration endpoint"""
-    user_data = {
-        "username": "testuser",
-        "email": "test@example.com",
-        "password": "password123"
-    }
-    
-    response = client.post("/api/auth/register", json=user_data)
-    
-    assert response.status_code == 200
-    assert "access_token" in response.json()
-```
-
-## 🚢 Production Deployment
-
-### Docker Deployment
-
+3. **Deploy**
 ```bash
-# Build and deploy with Docker Compose
-docker-compose -f docker-compose.prod.yml up -d
-
-# Or use the deployment script
-chmod +x scripts/deploy.sh
-./scripts/deploy.sh
+docker-compose -f docker-compose.yml up -d
 ```
 
-### Manual Production Setup
+#### Manual Deployment
 
-1. **Install dependencies:**
+1. **Setup production environment**
 ```bash
-pip install -r requirements/production.txt
+./scripts/setup.sh
 ```
 
-2. **Configure environment:**
-```bash
-cp .env.production .env
-# Edit .env with production settings
-```
-
-3. **Setup database:**
-```bash
-# Run migrations
-alembic upgrade head
-
-# Create admin user
-python scripts/init_db.py create-user admin admin@yourdom.com secure_password --admin
-```
-
-4. **Configure web server (Nginx):**
+2. **Configure web server** (Nginx example)
 ```nginx
-# /etc/nginx/sites-available/emberframe
 server {
     listen 80;
-    server_name yourdomain.com;
+    server_name your-domain.com;
     return 301 https://$server_name$request_uri;
 }
 
 server {
-    listen 443 ssl;
-    server_name yourdomain.com;
+    listen 443 ssl http2;
+    server_name your-domain.com;
     
     ssl_certificate /path/to/cert.pem;
     ssl_certificate_key /path/to/key.pem;
     
     location / {
-        proxy_pass http://127.0.0.1:8000;
+        proxy_pass http://localhost:8000;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -422,7 +125,7 @@ server {
     }
     
     location /ws/ {
-        proxy_pass http://127.0.0.1:8000;
+        proxy_pass http://localhost:8000;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
@@ -430,292 +133,149 @@ server {
 }
 ```
 
-5. **Run with Gunicorn:**
+## 📖 Documentation
+
+### API Documentation
+- **OpenAPI Docs**: `/api/docs` (Swagger UI)
+- **ReDoc**: `/api/redoc` (Alternative documentation)
+- **OpenAPI JSON**: `/api/openapi.json`
+
+### Architecture Overview
+
+```
+├── app/
+│   ├── api/           # API endpoints
+│   ├── core/          # Core functionality (database, security, config)
+│   ├── models/        # SQLAlchemy models
+│   ├── schemas/       # Pydantic schemas
+│   ├── services/      # Business logic services
+│   ├── tasks/         # Background tasks
+│   └── utils/         # Utility functions
+├── static/
+│   ├── css/           # Stylesheets
+│   ├── js/            # JavaScript applications
+│   └── assets/        # Images, fonts, etc.
+├── tests/             # Test suite
+├── scripts/           # Deployment and utility scripts
+└── requirements/      # Python dependencies
+```
+
+### Key Technologies
+
+- **Backend**: FastAPI, SQLAlchemy, Redis, Celery
+- **Frontend**: Vanilla JavaScript, CSS3, WebSockets
+- **Database**: PostgreSQL (production), SQLite (development)
+- **Caching**: Redis
+- **Security**: JWT, bcrypt, rate limiting
+- **Deployment**: Docker, Nginx, Gunicorn
+
+## 🧪 Testing
+
+Run the complete test suite:
+
 ```bash
-gunicorn main:app -c gunicorn.conf.py
+./scripts/test.sh
 ```
 
-### Environment-Specific Configurations
+Run specific test categories:
 
-**Development:**
-- SQLite database
-- Debug mode enabled
-- Auto-reload
-- Detailed error messages
-
-**Staging:**
-- PostgreSQL database
-- Debug mode disabled
-- Basic monitoring
-- Similar to production
-
-**Production:**
-- PostgreSQL with SSL
-- Redis cluster
-- Comprehensive monitoring
-- Security hardening
-- Load balancing
-
-## 🔐 Security Features
-
-### Authentication & Authorization
-- **JWT Tokens**: Secure stateless authentication
-- **Password Hashing**: Bcrypt with salt rounds
-- **Session Management**: Secure session tracking
-- **Role-Based Access**: User and admin roles
-- **Two-Factor Auth**: TOTP support (optional)
-
-### Data Protection
-- **Input Validation**: Comprehensive input sanitization
-- **SQL Injection Prevention**: Parameterized queries
-- **XSS Protection**: Content Security Policy
-- **CSRF Protection**: Token-based CSRF prevention
-- **File Upload Security**: Type and size validation
-
-### Network Security
-- **Rate Limiting**: Prevent brute force attacks
-- **IP Blocking**: Automatic suspicious IP blocking
-- **HTTPS Enforcement**: SSL/TLS encryption
-- **Security Headers**: HSTS, CSP, X-Frame-Options
-- **CORS Configuration**: Controlled cross-origin requests
-
-### Monitoring & Auditing
-- **Audit Logging**: Complete activity tracking
-- **Security Events**: Failed login monitoring
-- **Real-time Alerts**: Suspicious activity notifications
-- **Performance Monitoring**: System health tracking
-
-## 📊 Monitoring & Analytics
-
-### Built-in Monitoring
-
-**System Metrics:**
-- CPU and memory usage
-- Database performance
-- File storage usage
-- Active user sessions
-
-**User Analytics:**
-- Login patterns
-- Feature usage
-- File upload/download stats
-- Session duration
-
-**Security Monitoring:**
-- Failed login attempts
-- Suspicious IP addresses
-- Rate limit violations
-- Security alerts
-
-### External Monitoring
-
-**Prometheus Integration:**
-```yaml
-# prometheus.yml
-scrape_configs:
-  - job_name: 'emberframe'
-    static_configs:
-      - targets: ['localhost:8000']
-```
-
-**Grafana Dashboards:**
-- System performance metrics
-- User activity analytics
-- Security event monitoring
-- Business intelligence reports
-
-**Log Aggregation:**
-- ELK Stack (Elasticsearch, Logstash, Kibana)
-- Grafana Loki
-- Centralized logging
-
-## 🔧 Troubleshooting
-
-### Common Issues
-
-**Database Connection Errors:**
 ```bash
-# Check database status
-pg_isready -h localhost -p 5432
+# Unit tests only
+pytest tests/test_*.py -v
 
-# Verify connection string
-python -c "from app.core.database import engine; print(engine.url)"
+# Integration tests
+pytest tests/test_integration.py -v
+
+# API tests
+pytest tests/test_api.py -v
 ```
 
-**Redis Connection Issues:**
+## 🔧 Configuration
+
+### Environment Variables
+
+Key configuration options in `.env`:
+
 ```bash
-# Test Redis connection
-redis-cli ping
+# Application
+APP_NAME=EmberFrame V2
+DEBUG=false
+SECRET_KEY=your-secret-key
 
-# Check Redis configuration
-redis-cli config get "*"
+# Database
+DATABASE_URL=postgresql://user:pass@localhost/emberframe
+
+# Redis
+REDIS_URL=redis://localhost:6379/0
+
+# Security
+ALLOWED_HOSTS=["your-domain.com"]
+SESSION_EXPIRE=86400
+TOKEN_EXPIRE_HOURS=24
+
+# File Storage
+UPLOAD_DIR=uploads
+MAX_FILE_SIZE=104857600
+
+# Email (Optional)
+SMTP_HOST=smtp.example.com
+SMTP_PORT=587
+SMTP_USER=your-email@example.com
+SMTP_PASSWORD=your-password
 ```
 
-**File Upload Problems:**
-```bash
-# Check upload directory permissions
-ls -la uploads/
+### Advanced Configuration
 
-# Verify disk space
-df -h
-
-# Check file size limits
-grep MAX_FILE_SIZE .env
-```
-
-**Performance Issues:**
-```bash
-# Monitor system resources
-htop
-
-# Check database queries
-tail -f logs/emberframe.log | grep "slow"
-
-# Monitor Redis memory
-redis-cli info memory
-```
-
-### Debug Mode
-
-Enable debug mode for detailed error information:
-```env
-DEBUG=true
-```
-
-**Debug Features:**
-- Detailed error traces
-- SQL query logging
-- Request/response logging
-- Auto-reload on code changes
-
-### Logging Configuration
-
-```python
-# app/utils/logging.py
-import logging
-
-# Configure logging levels
-LOGGING_CONFIG = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'detailed': {
-            'format': '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-        },
-    },
-    'handlers': {
-        'file': {
-            'level': 'INFO',
-            'class': 'logging.FileHandler',
-            'filename': 'logs/emberframe.log',
-            'formatter': 'detailed',
-        },
-    },
-    'root': {
-        'level': 'INFO',
-        'handlers': ['file']
-    }
-}
-```
+For advanced configuration options, see:
+- `app/core/config.py` - Application settings
+- `gunicorn.conf.py` - WSGI server configuration
+- `docker-compose.yml` - Container orchestration
 
 ## 🤝 Contributing
 
-We welcome contributions to EmberFrame V2! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
 
 ### Development Workflow
 
-1. **Fork the repository**
-2. **Create a feature branch:**
-   ```bash
-   git checkout -b feature/amazing-feature
-   ```
-3. **Make your changes and add tests**
-4. **Run the test suite:**
-   ```bash
-   pytest
-   flake8 .
-   black .
-   ```
-5. **Commit your changes:**
-   ```bash
-   git commit -m "Add amazing feature"
-   ```
-6. **Push to your fork:**
-   ```bash
-   git push origin feature/amazing-feature
-   ```
-7. **Open a Pull Request**
-
-### Code Standards
-
-- **Python**: Follow PEP 8, use Black for formatting
-- **JavaScript**: Use modern ES6+ features, consistent naming
-- **Documentation**: Document all public APIs
-- **Testing**: Maintain >80% code coverage
-- **Security**: Follow OWASP guidelines
-
-### Reporting Issues
-
-Please use GitHub Issues to report bugs or request features:
-
-- **Bug Reports**: Include steps to reproduce, expected vs actual behavior
-- **Feature Requests**: Describe the use case and proposed solution
-- **Security Issues**: Report privately to security@emberframe.com
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/amazing-feature`
+3. Make your changes and add tests
+4. Run the test suite: `./scripts/test.sh`
+5. Commit your changes: `git commit -m 'Add amazing feature'`
+6. Push to the branch: `git push origin feature/amazing-feature`
+7. Open a Pull Request
 
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
+## 🆘 Support
+
+- **Documentation**: [Wiki](https://github.com/yourusername/emberframe-v2/wiki)
+- **Issues**: [GitHub Issues](https://github.com/yourusername/emberframe-v2/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/yourusername/emberframe-v2/discussions)
+- **Email**: support@emberframe.com
+
+## 🎯 Roadmap
+
+### Version 2.1 (Q2 2024)
+- [ ] Mobile application (React Native)
+- [ ] Advanced collaboration features
+- [ ] Plugin system
+- [ ] Enhanced analytics dashboard
+
+### Version 2.2 (Q3 2024)
+- [ ] AI-powered file organization
+- [ ] Advanced workflow automation
+- [ ] Third-party integrations (Slack, Teams)
+- [ ] Performance optimizations
+
 ## 🙏 Acknowledgments
 
-- **FastAPI**: For the excellent async web framework
-- **SQLAlchemy**: For powerful database ORM
-- **Redis**: For caching and background task queue
-- **PostgreSQL**: For reliable data storage
-- **Font Awesome**: For beautiful icons
-- **The Open Source Community**: For inspiration and contributions
-
-## 📞 Support
-
-### Community Support
-- **GitHub Issues**: Bug reports and feature requests
-- **Discussions**: Community Q&A and feature discussions
-- **Wiki**: Additional documentation and tutorials
-
-### Commercial Support
-For enterprise support, custom development, and consulting:
-- **Email**: enterprise@emberframe.com
-- **Website**: https://emberframe.com/enterprise
-
-### Security Issues
-For security-related issues:
-- **Email**: varous555@gmail.com
-- **PGP Key**: Available on our website
+- [FastAPI](https://fastapi.tiangolo.com/) for the amazing web framework
+- [SQLAlchemy](https://www.sqlalchemy.org/) for database ORM
+- [Redis](https://redis.io/) for caching and sessions
+- [Celery](https://docs.celeryproject.org/) for background tasks
+- All our contributors and users!
 
 ---
-
-## 🚀 What's Next?
-
-EmberFrame V2 is actively developed with exciting features planned:
-
-### Upcoming Features
-- **📱 Mobile App**: Native mobile applications
-- **🔗 Federation**: Multi-instance connectivity
-- **🤖 AI Integration**: Smart file organization and search
-- **📊 Advanced Analytics**: Business intelligence features
-- **🎮 App Store**: Third-party application ecosystem
-- **☁️ Cloud Sync**: Multi-device synchronization
-
-### Roadmap
-- **Q2 2025**: Mobile applications, advanced security features
-- **Q3 2025**: AI integration, federated authentication
-- **Q4 2025**: App marketplace, enterprise features
-- **2025**: Cloud platform, advanced analytics
-
----
-
-**Made with ❤️ by the EmberFrame Team**
-
-*EmberFrame V2 - Where the future of web desktop computing begins* 🔥
-
-[⬆ Back to top](#-emberframe-v2---modern-web-desktop-environment)
