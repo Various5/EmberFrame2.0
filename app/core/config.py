@@ -2,7 +2,7 @@
 Application configuration management
 """
 
-from pydantic import BaseSettings
+from pydantic_settings import BaseSettings
 from typing import List
 from functools import lru_cache
 
@@ -34,8 +34,23 @@ class Settings(BaseSettings):
     DEFAULT_ADMIN_USERNAME: str = "admin"
     DEFAULT_ADMIN_PASSWORD: str = "admin123"
 
+    # Security settings
+    RATE_LIMIT_ENABLED: bool = True
+    MAX_LOGIN_ATTEMPTS: int = 5
+    LOCKOUT_DURATION: int = 900  # 15 minutes
+
+    # Advanced security
+    ENABLE_2FA: bool = False
+    SESSION_SECURITY: bool = True
+    IP_WHITELIST: List[str] = []
+
+    # Performance
+    CACHE_TTL: int = 3600
+    MAX_WORKERS: int = 4
+
     class Config:
         env_file = ".env"
+        case_sensitive = True
 
 
 @lru_cache()
