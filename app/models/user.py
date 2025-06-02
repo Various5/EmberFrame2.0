@@ -144,7 +144,7 @@ class File(Base):
     # Content and organization
     description = Column(Text)
     tags = Column(JSON)  # Array of tags
-    metadata = Column(JSON)  # Additional metadata
+    file_metadata = Column(JSON)  # Additional metadata (renamed from 'metadata')
 
     # Permissions and sharing
     is_public = Column(Boolean, default=False, index=True)
